@@ -47,10 +47,10 @@ MonoBehaviour:
         m_LocalSubgraphs: []
         m_LastKnownBounds:
           serializedVersion: 2
-          x: 406
-          y: 518
-          width: 1105
-          height: 338
+          x: 152
+          y: 521
+          width: 1359
+          height: 232
         m_GraphElementMetaData:
         - m_Guid:
             m_Value0: 14055451601664926223
@@ -137,7 +137,7 @@ MonoBehaviour:
           serializedVersion: 2
           Hash: 0fe2ee42c3fe0ec30605086728fbead3
         m_Version: 2
-        m_Position: {x: 405.66827, y: 518.2044}
+        m_Position: {x: 151.88751, y: 520.56555}
         m_Title: 
         m_Tooltip: 
         m_NodePreviewModel:
@@ -174,7 +174,7 @@ MonoBehaviour:
           serializedVersion: 2
           Hash: da8f06a33397795efe39fd4bbc4f606d
         m_Version: 2
-        m_Position: {x: 591.9683, y: 519.3544}
+        m_Position: {x: 338.18756, y: 520.7156}
         m_Title: 
         m_Tooltip: 
         m_NodePreviewModel:
@@ -266,7 +266,7 @@ MonoBehaviour:
           serializedVersion: 2
           Hash: e3433bf7144964e8bed8094623c890ef
         m_Version: 2
-        m_Position: {x: 1314.111, y: 528.47955}
+        m_Position: {x: 1314.111, y: 521.47955}
         m_Title: 
         m_Tooltip: 
         m_NodePreviewModel:
@@ -309,7 +309,7 @@ MonoBehaviour:
     - rid: 6930682915662594108
       type: {class: 'Constant`1[[UnityEngine.AudioClip, UnityEngine.AudioModule]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
-        m_Value: {fileID: 0}
+        m_Value: {fileID: 8300000, guid: a4a483b9849fd1c44950b13a527bf5b9, type: 3}
     - rid: 6930682915662594109
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -324,7 +324,7 @@ MonoBehaviour:
           serializedVersion: 2
           Hash: 2c395d8560fc104f75b78c4a955acf3a
         m_Version: 2
-        m_Position: {x: 961.193, y: 623.5588}
+        m_Position: {x: 856.2526, y: 521.36346}
         m_Title: 
         m_Tooltip: 
         m_NodePreviewModel:
@@ -368,7 +368,7 @@ MonoBehaviour:
     - rid: 6930682938242367551
       type: {class: 'Constant`1[[UnityEngine.AudioClip, UnityEngine.AudioModule]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
-        m_Value: {fileID: 0}
+        m_Value: {fileID: 8300000, guid: 19335cb6e8e0f15478792ea8b022b73c, type: 3}
     - rid: 6930682938242367552
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:

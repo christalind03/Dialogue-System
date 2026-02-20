@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Code.Scripts.Utils;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -8,11 +9,16 @@ namespace Code.Scripts.Dialogue.Runtime
     /// <summary>
     /// Controls the execution of a compiled runtime <see cref="DialogueGraph"/>.
     /// </summary>
+    [RequireComponent(typeof(AudioSource))]
     public class DialogueManager : MonoBehaviour
     {
         [SerializeField]
         [Tooltip("The reference for the input action used to continue dialogue.")]
         private InputActionReference actionReference;
+        
+        [SerializeField]
+        [Tooltip("The AudioSource used to play dialogue voice lines during playback.")]
+        private AudioSource dialogueAudio;
         
         [SerializeField]
         [Tooltip("The compiled runtime DialogueGraph to execute.")]
@@ -34,13 +40,19 @@ namespace Code.Scripts.Dialogue.Runtime
         private InputAction inputAction;
         
         /// <summary>
-        /// Enables the input action when the object becomes enabled and active.
-        /// Additionally, loads and begins dialogue execution when the <see cref="GameObject"/> is initialized.
+        /// Initializes runtime references.
         /// </summary>
         private void Awake()
         {
+            dialogueAudio = GetComponent<AudioSource>();
             inputAction = actionReference.action;
+        }
 
+        /// <summary>
+        /// Automatically loads and begins dialogue execution when the <see cref="GameObject"/> is initialized.
+        /// </summary>
+        private void Start()
+        {
             LoadDialogue();
             PlayDialogue();
         }
@@ -100,11 +112,6 @@ namespace Code.Scripts.Dialogue.Runtime
         /// </summary>
         public void PlayDialogue()
         {
-            if (inputAction.enabled == false)
-            {
-                inputAction.Enable();
-            }
-            
             if (-1 < currentNode?.NodeID)
             {
                 ProcessNode();
@@ -112,6 +119,11 @@ namespace Code.Scripts.Dialogue.Runtime
             else
             {
                 StopDialogue();
+            }
+            
+            if (inputAction.enabled == false)
+            {
+                inputAction.Enable();
             }
         }
 
@@ -123,9 +135,17 @@ namespace Code.Scripts.Dialogue.Runtime
         /// </exception>
         private void ProcessNode()
         {
+            dialogueAudio.Stop();
+            
             switch (currentNode)
             {
                 case DialogueNode activeNode:
+                    if (activeNode.Audio is not null && dialogueAudio is not null)
+                    {
+                        dialogueAudio.clip = activeNode.Audio;
+                        dialogueAudio.Play();
+                    }
+                    
                     Debug.Log($"{activeNode.Actor}: {activeNode.Text}");
                     break;
                 
@@ -144,5 +164,23 @@ namespace Code.Scripts.Dialogue.Runtime
             inputAction.Disable();
             Debug.Log("END DIALOGUE");
         }
+        
+        #if UNITY_EDITOR
+        
+        /// <summary>
+        /// Validates required references in the Unity Editor.
+        /// If validation fails while in Play mode, the editor will immediately exit Play mode to prevent further issues.
+        /// </summary>
+        private void OnValidate()
+        {
+            ObjectValidator.AssertConditions(
+                this,
+                (actionReference is null, $"<b>{nameof(actionReference)}</b> is not assigned."),
+                (dialogueAudio is null, $"<b>{nameof(dialogueAudio)}</b> is not assigned."),
+                (dialogueGraph is null, $"<b>{nameof(dialogueGraph)}</b> is not assigned.")
+            );
+        }
+        
+        #endif
     }
 }
