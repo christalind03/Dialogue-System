@@ -161,7 +161,9 @@ namespace Code.Scripts.Dialogue.Runtime
         /// </summary>
         public void StopDialogue()
         {
+            dialogueAudio.Stop();
             inputAction.Disable();
+
             Debug.Log("END DIALOGUE");
         }
         
