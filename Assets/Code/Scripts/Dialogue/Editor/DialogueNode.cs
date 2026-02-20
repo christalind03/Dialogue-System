@@ -18,14 +18,14 @@ namespace Code.Scripts.Dialogue.Editor
         /// <param name="portContext">The context used to define ports for this node.</param>
         protected override void OnDefinePorts(IPortDefinitionContext portContext)
         {
-            PortBuilder.CreateInputPort(portContext);
+            DialoguePorts.CreateInputPort(portContext);
             
-            // TODO: Use DialogueActor instead of string when GraphToolkit provides full variable support
-            portContext.AddInputPort<string>("Actor").Build();
-            portContext.AddInputPort<AudioClip>("Audio Clip").Build();
-            portContext.AddInputPort<string>("Description").Build();
-            PortBuilder.CreateCallbackPorts(portContext);
-            PortBuilder.CreateOutputPort(portContext);
+            // TODO: Use DialogueActor instead of a string when GraphToolkit provides full variable support
+            portContext.AddInputPort<string>(DialoguePorts.Actor).Build();
+            portContext.AddInputPort<AudioClip>(DialoguePorts.Audio).Build();
+            portContext.AddInputPort<string>(DialoguePorts.Text).Build();
+            DialoguePorts.CreateCallbackPorts(portContext);
+            DialoguePorts.CreateOutputPort(portContext);
         }
     }
 }

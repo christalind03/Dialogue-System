@@ -17,8 +17,8 @@ namespace Code.Scripts.Dialogue.Editor
         /// <param name="portContext">The context used to define ports for this node.</param>
         protected override void OnDefinePorts(IPortDefinitionContext portContext)
         {
-            PortBuilder.CreateInputPort(portContext);
-            PortBuilder.CreateCallbackPorts(portContext);
+            DialoguePorts.CreateInputPort(portContext);
+            DialoguePorts.CreateCallbackPorts(portContext);
         }
     }
 }

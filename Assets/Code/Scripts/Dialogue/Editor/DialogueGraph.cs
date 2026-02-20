@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.GraphToolkit.Editor;
 using UnityEditor;
-using UnityEngine;
 
 namespace Code.Scripts.Dialogue.Editor
 {
