@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Code.Scripts.Dialogue.Runtime
 {
@@ -9,12 +10,14 @@ namespace Code.Scripts.Dialogue.Runtime
     /// </summary>
     public class DialogueManager : MonoBehaviour
     {
-        /// <summary>
-        /// The compiled runtime <see cref="DialogueGraph"/> to execute.
-        /// </summary>
         [SerializeField]
+        [Tooltip("The reference for the input action used to continue dialogue.")]
+        private InputActionReference actionReference;
+        
+        [SerializeField]
+        [Tooltip("The compiled runtime DialogueGraph to execute.")]
         private DialogueGraph dialogueGraph;
-
+        
         /// <summary>
         /// A runtime lookup table mapping node IDs to their corresponding <see cref="RuntimeNode"/>.
         /// </summary>
@@ -26,13 +29,36 @@ namespace Code.Scripts.Dialogue.Runtime
         private RuntimeNode currentNode;
 
         /// <summary>
-        /// Automatically loads and begins dialogue execution when the <see cref="GameObject"/> is initialized.
-        /// This is for debugging purposes only.
+        /// The input action instance created from <see cref="actionReference"/> for continuing dialogue.
+        /// </summary>
+        private InputAction inputAction;
+        
+        /// <summary>
+        /// Enables the input action when the object becomes enabled and active.
+        /// Additionally, loads and begins dialogue execution when the <see cref="GameObject"/> is initialized.
         /// </summary>
         private void Awake()
         {
+            inputAction = actionReference.action;
+
             LoadDialogue();
             PlayDialogue();
+        }
+
+        /// <summary>
+        /// Subscribes to the <see cref="inputAction"/>'s <c>performed</c> event to trigger dialogue playback.
+        /// </summary>
+        private void OnEnable()
+        {
+            inputAction.performed += PlayDialogue;
+        }
+
+        /// <summary>
+        /// Unsubscribes from the <see cref="inputAction"/>'s <c>performed</c> event to clean up listeners.
+        /// </summary>
+        private void OnDisable()
+        {
+            inputAction.performed -= PlayDialogue;
         }
 
         /// <summary>
@@ -61,10 +87,24 @@ namespace Code.Scripts.Dialogue.Runtime
         }
 
         /// <summary>
+        /// Callback invoked when the <see cref="inputAction"/> is performed.
+        /// </summary>
+        /// <param name="inputContext">The context information about the <see cref="inputAction"/> trigger.</param>
+        private void PlayDialogue(InputAction.CallbackContext inputContext)
+        {
+            PlayDialogue();
+        }
+        
+        /// <summary>
         /// Begins or continues dialogue execution.
         /// </summary>
         public void PlayDialogue()
         {
+            if (inputAction.enabled == false)
+            {
+                inputAction.Enable();
+            }
+            
             if (-1 < currentNode?.NodeID)
             {
                 ProcessNode();
@@ -94,9 +134,6 @@ namespace Code.Scripts.Dialogue.Runtime
             }
 
             currentNode = dialogueNodes.GetValueOrDefault(currentNode.UpcomingID);
-            
-            // TODO: Remove this method call once there's a more reliable way to continue dialogue
-            PlayDialogue();
         }
         
         /// <summary>
@@ -104,6 +141,7 @@ namespace Code.Scripts.Dialogue.Runtime
         /// </summary>
         public void StopDialogue()
         {
+            inputAction.Disable();
             Debug.Log("END DIALOGUE");
         }
     }
