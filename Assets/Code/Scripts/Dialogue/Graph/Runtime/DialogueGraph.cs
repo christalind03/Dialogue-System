@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Code.Scripts.Dialogue.Runtime
+namespace Code.Scripts.Dialogue.Graph.Runtime
 {
     /// <summary>
     /// A runtime representation of a compiled editor <see cref="Editor.DialogueGraph"/>
@@ -20,14 +20,10 @@ namespace Code.Scripts.Dialogue.Runtime
         [SerializeReference]
         private List<RuntimeNode> nodeRegistry = new();
         
-        /// <summary>
-        /// Retrieves the ID of the graph's entry node.
-        /// </summary>
+        /// <inheritdoc cref="entryID"/>
         public int EntryID => entryID;
         
-        /// <summary>
-        /// Retrieves the collection of registered <see cref="RuntimeNode"/>.
-        /// </summary>
+        /// <inheritdoc cref="nodeRegistry"/>
         public List<RuntimeNode> NodeRegistry => nodeRegistry;
 
         /// <summary>

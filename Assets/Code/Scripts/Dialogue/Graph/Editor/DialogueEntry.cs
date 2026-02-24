@@ -3,13 +3,13 @@
 using System;
 using Unity.GraphToolkit.Editor;
 
-namespace Code.Scripts.Dialogue.Editor
+namespace Code.Scripts.Dialogue.Graph.Editor
 {
     /// <summary>
-    /// Represents the exit node in a dialogue graph with the option to trigger callbacks.
+    /// Represents the starting point in a dialogue graph.
     /// </summary>
     [Serializable]
-    internal class DialogueExit : Node
+    internal class DialogueEntry : Node
     {
         /// <summary>
         /// Defines the ports available for this node.
@@ -17,8 +17,7 @@ namespace Code.Scripts.Dialogue.Editor
         /// <param name="portContext">The context used to define ports for this node.</param>
         protected override void OnDefinePorts(IPortDefinitionContext portContext)
         {
-            DialoguePorts.CreateInputPort(portContext);
-            DialoguePorts.CreateCallbackPorts(portContext);
+            DialoguePorts.CreateOutputPort(portContext);
         }
     }
 }

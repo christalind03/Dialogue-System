@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Code.Scripts.Dialogue.Runtime
+namespace Code.Scripts.Dialogue.Graph.Runtime
 {
     /// <summary>
     /// The base class for all runtime <see cref="DialogueGraph"/> nodes.
@@ -21,14 +21,10 @@ namespace Code.Scripts.Dialogue.Runtime
         [SerializeField]
         private int upcomingID;
         
-        /// <summary>
-        /// Retrieves the unique ID of this node.
-        /// </summary>
+        /// <inheritdoc cref="nodeID"/>
         public int NodeID => nodeID;
         
-        /// <summary>
-        /// Retrieves the ID of the upcoming node to process.
-        /// </summary>
+        /// <inheritdoc cref="upcomingID"/>
         public int UpcomingID => upcomingID;
 
         /// <summary>

@@ -1,10 +1,10 @@
 ﻿#if UNITY_EDITOR
 
+using Code.Scripts.Dialogue.Events.Runtime;
 using Unity.GraphToolkit.Editor;
 using UnityEngine;
-using UnityEngine.Events;
 
-namespace Code.Scripts.Dialogue.Editor
+namespace Code.Scripts.Dialogue.Graph.Editor
 {
     /// <summary>
     /// Provides reusable strings and methods for defining common dialogue-related ports on nodes.
@@ -22,6 +22,12 @@ namespace Code.Scripts.Dialogue.Editor
         /// <para>Expected Type: <see cref="AudioClip"/></para>
         /// </summary>
         public const string Audio = "Audio";
+        
+        /// <summary>
+        /// Defines the actions or callbacks for a dialogue node.
+        /// <para>Expected Type: <see cref="DialogueEvent"/></para>
+        /// </summary>
+        public const string Event = "Events";
         
         /// <summary>
         /// Defines the connection to the previous dialogue node.
@@ -45,10 +51,9 @@ namespace Code.Scripts.Dialogue.Editor
         /// Registers callback-related input ports on a node.
         /// </summary>
         /// <param name="portContext">The context used to define ports for the node.</param>
-        public static void CreateCallbackPorts(Node.IPortDefinitionContext portContext)
+        public static void CreateEventPorts(Node.IPortDefinitionContext portContext)
         {
-            // TODO: Separate "OnDelay", "OnEnter", and "OnExit" callbacks
-            portContext.AddInputPort<UnityEvent>("Callbacks").Build();
+            portContext.AddInputPort<DialogueEvent>(Event).Build();
         }
         
         /// <summary>

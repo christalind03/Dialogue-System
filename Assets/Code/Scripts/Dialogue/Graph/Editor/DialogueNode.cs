@@ -1,10 +1,12 @@
 ﻿#if UNITY_EDITOR
 
 using System;
+using System.Collections.Generic;
+using Code.Scripts.Events;
 using Unity.GraphToolkit.Editor;
 using UnityEngine;
 
-namespace Code.Scripts.Dialogue.Editor
+namespace Code.Scripts.Dialogue.Graph.Editor
 {
     /// <summary>
     /// Represents a single line of dialogue within a dialogue graph.
@@ -24,7 +26,7 @@ namespace Code.Scripts.Dialogue.Editor
             portContext.AddInputPort<string>(DialoguePorts.Actor).Build();
             portContext.AddInputPort<AudioClip>(DialoguePorts.Audio).Build();
             portContext.AddInputPort<string>(DialoguePorts.Text).Build();
-            DialoguePorts.CreateCallbackPorts(portContext);
+            DialoguePorts.CreateEventPorts(portContext);
             DialoguePorts.CreateOutputPort(portContext);
         }
     }

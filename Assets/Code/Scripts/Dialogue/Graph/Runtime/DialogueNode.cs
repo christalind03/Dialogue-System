@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Code.Scripts.Dialogue.Events.Runtime;
+using System;
 using UnityEngine;
 
-namespace Code.Scripts.Dialogue.Runtime
+namespace Code.Scripts.Dialogue.Graph.Runtime
 {
     /// <summary>
     /// A runtime representation of a <see cref="Editor.DialogueNode"/>.
@@ -10,52 +11,56 @@ namespace Code.Scripts.Dialogue.Runtime
     public class DialogueNode : RuntimeNode
     {
         /// <summary>
-        /// The name or identifier of the actor speaking.
+        /// The actor speaking this dialogue line.
         /// </summary>
         [SerializeField]
         private string nodeActor;
         
         /// <summary>
-        /// The audio clip to play when this dialogue line is processed.
-        /// May be null if no audio is associated with this node.
+        /// The <see cref="AudioClip"/> associated with this dialogue line.
         /// </summary>
         [SerializeField]
         private AudioClip nodeAudio;
         
         /// <summary>
-        /// The text content displayed or spoken during this node.
+        /// The content of this dialogue line.
         /// </summary>
         [SerializeField]
         private string nodeText;
 
         /// <summary>
-        /// Retrieves the actor speaking.
+        /// The <see cref="DialogueEvent"/> associated with this dialogue line.
         /// </summary>
+        [SerializeField]
+        private DialogueEvent nodeEvent;
+        
+        /// <inheritdoc cref="nodeActor"/>
         public string Actor => nodeActor;
         
-        /// <summary>
-        /// Retrieves the audio clip associated with this line.
-        /// </summary>
+        /// <inheritdoc cref="nodeAudio"/>
         public AudioClip Audio => nodeAudio;
         
-        /// <summary>
-        /// Retrieves the text content.
-        /// </summary>
+        /// <inheritdoc cref="nodeText"/>
         public string Text => nodeText;
+        
+        /// <inheritdoc cref="nodeEvent"/>
+        public DialogueEvent Events => nodeEvent;
         
         /// <summary>
         /// Constructs a runtime <see cref="DialogueNode"/>.
         /// </summary>
         /// <param name="nodeID">The unique identifier for this node within the <see cref="DialogueGraph"/>.</param>
         /// <param name="nodeActor">The actor speaking this dialogue line.</param>
-        /// <param name="nodeAudio">The audio clip to associate with this dialogue line.</param>
-        /// <param name="nodeText">The text content of this dialogue line.</param>
+        /// <param name="nodeAudio">The <see cref="AudioClip"/> associated with this dialogue line.</param>
+        /// <param name="nodeText">The content of this dialogue line.</param>
+        /// <param name="nodeEvent">The <see cref="DialogueEvent"/> associated with this dialogue line.</param>
         /// <param name="upcomingID">The ID of the next node in the dialogue sequence.</param>
-        public DialogueNode(int nodeID, string nodeActor, AudioClip nodeAudio, string nodeText, int upcomingID) : base(nodeID, upcomingID)
+        public DialogueNode(int nodeID, string nodeActor, AudioClip nodeAudio, string nodeText, DialogueEvent nodeEvent, int upcomingID) : base(nodeID, upcomingID)
         {
             this.nodeActor = nodeActor;
             this.nodeAudio = nodeAudio;
             this.nodeText = nodeText;
+            this.nodeEvent = nodeEvent;
         }
     }
 }

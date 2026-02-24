@@ -1,10 +1,14 @@
-﻿using Code.Scripts.Utils;
+﻿using Code.Scripts.Dialogue.Events.Runtime;
+using Code.Scripts.Dialogue.Graph.Runtime;
+using Code.Scripts.Events.Runtime;
+using Code.Scripts.Utils;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Code.Scripts.Dialogue.Runtime
+namespace Code.Scripts.Dialogue.Behaviours
 {
     /// <summary>
     /// Controls the execution of a compiled runtime <see cref="DialogueGraph"/>.
@@ -74,6 +78,22 @@ namespace Code.Scripts.Dialogue.Runtime
         }
 
         /// <summary>
+        /// Allow the <see cref="DialogueManager"/> to receive input events.
+        /// </summary>
+        public void EnableInput()
+        {
+            inputAction.Enable();
+        }
+
+        /// <summary>
+        /// Prevent the <see cref="DialogueManager"/> from receiving input events.
+        /// </summary>
+        public void DisableInput()
+        {
+            inputAction.Disable();
+        }
+        
+        /// <summary>
         /// Loads the collection of <see cref="RuntimeNode"/> from a <see cref="DialogueGraph"/> into the internal lookup dictionary and sets the starting node for playback.
         /// </summary>
         /// <param name="targetGraph">The <see cref="DialogueGraph"/> to load.</param>
@@ -123,7 +143,7 @@ namespace Code.Scripts.Dialogue.Runtime
             
             if (inputAction.enabled == false)
             {
-                inputAction.Enable();
+                EnableInput();
             }
         }
 
@@ -135,11 +155,13 @@ namespace Code.Scripts.Dialogue.Runtime
         /// </exception>
         private void ProcessNode()
         {
+            StopAllCoroutines();
             dialogueAudio.Stop();
             
             switch (currentNode)
             {
                 case DialogueNode activeNode:
+                    activeNode.Events.EventChannels.ForEach(dialogueEvent => StartCoroutine(DelayEvent(dialogueEvent)));
                     if (activeNode.Audio is not null && dialogueAudio is not null)
                     {
                         dialogueAudio.clip = activeNode.Audio;
@@ -162,9 +184,20 @@ namespace Code.Scripts.Dialogue.Runtime
         public void StopDialogue()
         {
             dialogueAudio.Stop();
-            inputAction.Disable();
+            DisableInput();
 
             Debug.Log("END DIALOGUE");
+        }
+
+        /// <summary>
+        /// Waits for the specified delay duration in the given <see cref="DelayEvent"/> before emitting the <see cref="DelayEvent.EventChannel"/>.
+        /// </summary>
+        /// <param name="delayEvent">The <see cref="DelayEvent"/> containing the delay duration and <see cref="EventChannel"/> to emit.</param>
+        /// <returns>An <see cref="IEnumerator"/> that can be used by Unity's coroutine system.</returns>
+        private static IEnumerator DelayEvent(DelayEvent delayEvent)
+        {
+            yield return new WaitForSeconds(delayEvent.DelayDuration);
+            delayEvent.EventChannel.Emit();
         }
         
         #if UNITY_EDITOR

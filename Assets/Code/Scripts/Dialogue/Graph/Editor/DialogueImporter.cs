@@ -3,11 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Code.Scripts.Dialogue.Events.Runtime;
+using Code.Scripts.Dialogue.Graph.Runtime;
+using Code.Scripts.Events;
 using Unity.GraphToolkit.Editor;
 using UnityEditor.AssetImporters;
 using UnityEngine;
 
-namespace Code.Scripts.Dialogue.Editor
+namespace Code.Scripts.Dialogue.Graph.Editor
 {
     /// <summary>
     /// Responsible for converting the editor <see cref="DialogueGraph"/> into its runtime presentation <see cref="Runtime.DialogueGraph"/>.
@@ -106,7 +109,7 @@ namespace Code.Scripts.Dialogue.Editor
         /// <exception cref="NotSupportedException">
         /// Thrown if the editor <see cref="INode"/> type is not supported for runtime conversion.
         /// </exception>
-        private static Runtime.RuntimeNode InstantiateRuntimeNode(INode targetNode, int nodeID, int upcomingID)
+        private static RuntimeNode InstantiateRuntimeNode(INode targetNode, int nodeID, int upcomingID)
         {
             switch (targetNode)
             {
@@ -114,8 +117,9 @@ namespace Code.Scripts.Dialogue.Editor
                     var nodeActor = RetrievePortValue<string>(targetNode.GetInputPortByName(DialoguePorts.Actor));
                     var nodeAudio = RetrievePortValue<AudioClip>(targetNode.GetInputPortByName(DialoguePorts.Audio));
                     var nodeText = RetrievePortValue<string>(targetNode.GetInputPortByName(DialoguePorts.Text));
-                    
-                    return new Runtime.DialogueNode(nodeID, nodeActor, nodeAudio, nodeText, upcomingID);
+                    var nodeEvent = RetrievePortValue<DialogueEvent>(targetNode.GetInputPortByName(DialoguePorts.Event));
+
+                    return new Runtime.DialogueNode(nodeID, nodeActor, nodeAudio, nodeText, nodeEvent, upcomingID);
                 
                 default:
                     throw new NotSupportedException($"{targetNode.GetType().Name} is not supported.");

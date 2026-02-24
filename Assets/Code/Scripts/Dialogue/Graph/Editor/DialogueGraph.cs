@@ -6,7 +6,7 @@ using System.Linq;
 using Unity.GraphToolkit.Editor;
 using UnityEditor;
 
-namespace Code.Scripts.Dialogue.Editor
+namespace Code.Scripts.Dialogue.Graph.Editor
 {
     /// <summary>
     /// Defines the asset type that stores and serializes a dialogue graph.
@@ -14,7 +14,7 @@ namespace Code.Scripts.Dialogue.Editor
     /// </summary>
     [Graph(AssetExtension)]
     [Serializable]
-    internal class DialogueGraph : Graph
+    internal class DialogueGraph : Unity.GraphToolkit.Editor.Graph
     {
         /// <summary>
         /// The file extension used for dialogue graph assets.

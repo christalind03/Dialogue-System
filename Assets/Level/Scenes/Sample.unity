@@ -267,6 +267,9 @@ GameObject:
   - component: {fileID: 370246960}
   - component: {fileID: 370246962}
   - component: {fileID: 370246961}
+  - component: {fileID: 370246965}
+  - component: {fileID: 370246964}
+  - component: {fileID: 370246963}
   m_Layer: 0
   m_Name: Dialogue Manager
   m_TagString: Untagged
@@ -401,6 +404,95 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &370246963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 370246959}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2d48836bfdd4302be2df12ea0255dc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Scripts.Events::Code.Scripts.Events.Runtime.EventListener
+  delayDuration: 0
+  eventChannel: {fileID: 11400000, guid: 7f1f461f41924244bb527ef7887819bc, type: 2}
+  eventResponse:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 370246961}
+        m_TargetAssemblyTypeName: Code.Scripts.Dialogue.Runtime.DialogueManager,
+          Code.Scripts.Dialogue
+        m_MethodName: DisableInput
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &370246964
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 370246959}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2d48836bfdd4302be2df12ea0255dc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Scripts.Events::Code.Scripts.Events.Runtime.EventListener
+  delayDuration: 0
+  eventChannel: {fileID: 11400000, guid: 5d969b77de9ec4b4594ca973c6e2889a, type: 2}
+  eventResponse:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 370246961}
+        m_TargetAssemblyTypeName: Code.Scripts.Dialogue.Runtime.DialogueManager,
+          Code.Scripts.Dialogue
+        m_MethodName: EnableInput
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &370246965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 370246959}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2d48836bfdd4302be2df12ea0255dc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Scripts.Events::Code.Scripts.Events.Runtime.EventListener
+  delayDuration: 0
+  eventChannel: {fileID: 11400000, guid: b582169c03f96164ea6544eb009a2cd8, type: 2}
+  eventResponse:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 370246962}
+        m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
+        m_MethodName: PlayOneShot
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 8300000, guid: 0f542b2faa6098e4498a343b66cadab9, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.AudioClip, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1023443829
 GameObject:
   m_ObjectHideFlags: 0
