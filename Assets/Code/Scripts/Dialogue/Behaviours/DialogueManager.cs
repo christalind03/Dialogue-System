@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
 namespace Code.Scripts.Dialogue.Behaviours
 {
@@ -16,9 +17,17 @@ namespace Code.Scripts.Dialogue.Behaviours
     [RequireComponent(typeof(AudioSource))]
     public class DialogueManager : MonoBehaviour
     {
+        [Header("Input Actions")]
+        
         [SerializeField]
         [Tooltip("The reference for the input action used to continue dialogue.")]
-        private InputActionReference actionReference;
+        private InputActionReference continueReference;
+        
+        [SerializeField]
+        [Tooltip("The reference for the input action used to select a dialogue option.")]
+        private InputActionReference selectReference;
+        
+        [Header("Runtime References")]
         
         [SerializeField]
         [Tooltip("The AudioSource used to play dialogue voice lines during playback.")]
@@ -31,7 +40,12 @@ namespace Code.Scripts.Dialogue.Behaviours
         /// <summary>
         /// A runtime lookup table mapping node IDs to their corresponding <see cref="RuntimeNode"/>.
         /// </summary>
-        private readonly Dictionary<int, RuntimeNode> dialogueNodes = new();
+        private readonly Dictionary<int, RuntimeNode> dialogueMap = new();
+        
+        /// <summary>
+        /// The <see cref="List{T}"/> of <see cref="DialogueOption"/> available for the current <see cref="DialogueSelection"/> node.
+        /// </summary>
+        private List<DialogueOption> currentOptions;
         
         /// <summary>
         /// The <see cref="RuntimeNode"/> currently being processed.
@@ -39,9 +53,14 @@ namespace Code.Scripts.Dialogue.Behaviours
         private RuntimeNode currentNode;
 
         /// <summary>
-        /// The input action instance created from <see cref="actionReference"/> for continuing dialogue.
+        /// The <see cref="InputAction"/> instance referenced from <see cref="continueReference"/> for continuing dialogue.
         /// </summary>
-        private InputAction inputAction;
+        private InputAction continueAction;
+        
+        /// <summary>
+        /// The <see cref="InputAction"/> instance referenced from <see cref="selectReference"/> for selecting dialogue options.
+        /// </summary>
+        private InputAction selectAction;
         
         /// <summary>
         /// Initializes runtime references.
@@ -49,7 +68,9 @@ namespace Code.Scripts.Dialogue.Behaviours
         private void Awake()
         {
             dialogueAudio = GetComponent<AudioSource>();
-            inputAction = actionReference.action;
+            
+            continueAction = continueReference.action;
+            selectAction = selectReference.action;
         }
 
         /// <summary>
@@ -62,35 +83,53 @@ namespace Code.Scripts.Dialogue.Behaviours
         }
 
         /// <summary>
-        /// Subscribes to the <see cref="inputAction"/>'s <c>performed</c> event to trigger dialogue playback.
+        /// Subscribes to the <see cref="continueAction"/>'s <c>performed</c> event to trigger dialogue playback.
         /// </summary>
         private void OnEnable()
         {
-            inputAction.performed += PlayDialogue;
+            continueAction.performed += PlayDialogue;
+            selectAction.performed += SelectDialogue;
         }
 
         /// <summary>
-        /// Unsubscribes from the <see cref="inputAction"/>'s <c>performed</c> event to clean up listeners.
+        /// Unsubscribes from the <see cref="continueAction"/>'s <c>performed</c> event to clean up listeners.
         /// </summary>
         private void OnDisable()
         {
-            inputAction.performed -= PlayDialogue;
+            continueAction.performed -= PlayDialogue;
+            selectAction.performed -= SelectDialogue;
         }
 
         /// <summary>
-        /// Allow the <see cref="DialogueManager"/> to receive input events.
+        /// Allow the <see cref="DialogueManager"/> to receive input events for <see cref="continueAction"/>.
         /// </summary>
-        public void EnableInput()
+        public void EnableContinue()
         {
-            inputAction.Enable();
+            continueAction.Enable();
         }
 
         /// <summary>
-        /// Prevent the <see cref="DialogueManager"/> from receiving input events.
+        /// Allow the <see cref="DialogueManager"/> to receive input events for <see cref="selectAction"/>.
         /// </summary>
-        public void DisableInput()
+        public void EnableSelect()
         {
-            inputAction.Disable();
+            selectAction.Enable();
+        }
+
+        /// <summary>
+        /// Prevent the <see cref="DialogueManager"/> from receiving input events for <see cref="continueAction"/>.
+        /// </summary>
+        public void DisableContinue()
+        {
+            continueAction.Disable();
+        }
+
+        /// <summary>
+        /// Prevent the <see cref="DialogueManager"/> from receiving input events for <see cref="selectAction"/>.
+        /// </summary>
+        public void DisableSelect()
+        {
+            selectAction.Disable();
         }
         
         /// <summary>
@@ -99,7 +138,7 @@ namespace Code.Scripts.Dialogue.Behaviours
         /// <param name="targetGraph">The <see cref="DialogueGraph"/> to load.</param>
         public void LoadDialogue(DialogueGraph targetGraph = null)
         {
-            dialogueNodes.Clear();
+            dialogueMap.Clear();
 
             // Replace the current dialogue graph, if provided.
             dialogueGraph = targetGraph ?? dialogueGraph;
@@ -107,10 +146,10 @@ namespace Code.Scripts.Dialogue.Behaviours
             {
                 foreach (var dialogueNode in dialogueGraph.NodeRegistry)
                 {
-                    dialogueNodes[dialogueNode.NodeID] = dialogueNode;
+                    dialogueMap[dialogueNode.NodeID] = dialogueNode;
                 }
 
-                currentNode = dialogueNodes[dialogueGraph.EntryID];
+                currentNode = dialogueMap[dialogueGraph.EntryID];
             }
             else
             {
@@ -119,11 +158,32 @@ namespace Code.Scripts.Dialogue.Behaviours
         }
 
         /// <summary>
-        /// Callback invoked when the <see cref="inputAction"/> is performed.
+        /// Callback wrapper for <see cref="PlayDialogue()"/> when <see cref="continueAction"/> is performed.
         /// </summary>
-        /// <param name="inputContext">The context information about the <see cref="inputAction"/> trigger.</param>
+        /// <param name="inputContext">The context information about the <see cref="continueAction"/> trigger.</param>
         private void PlayDialogue(InputAction.CallbackContext inputContext)
+        {                
+            PlayDialogue();
+        }
+        
+        /// <summary>
+        /// Handles dialogue option selection via numeric key input.
+        /// </summary>
+        /// <param name="inputContext">The context information about the <see cref="selectAction"/> trigger.</param>
+        private void SelectDialogue(InputAction.CallbackContext inputContext)
         {
+            if (inputContext.performed == false) return;
+            if (inputContext.control is not KeyControl keyControl) return;
+            
+            var keyCode = keyControl.name;
+            var keySelection = int.Parse(keyCode);
+            if (currentOptions.Count <= keySelection) return;
+            
+            var selectedOption = currentOptions[keySelection];
+            
+            DisableSelect();
+            TriggerEvents(selectedOption.OptionData.Events);
+            currentNode = dialogueMap[selectedOption.UpcomingID];
             PlayDialogue();
         }
         
@@ -141,9 +201,9 @@ namespace Code.Scripts.Dialogue.Behaviours
                 StopDialogue();
             }
             
-            if (inputAction.enabled == false)
+            if (continueAction.enabled == false)
             {
-                EnableInput();
+                EnableContinue();
             }
         }
 
@@ -155,40 +215,75 @@ namespace Code.Scripts.Dialogue.Behaviours
         /// </exception>
         private void ProcessNode()
         {
-            StopAllCoroutines();
             dialogueAudio.Stop();
+            StopAllCoroutines();
             
             switch (currentNode)
             {
                 case DialogueNode activeNode:
-                    activeNode.Events.EventChannels.ForEach(dialogueEvent => StartCoroutine(DelayEvent(dialogueEvent)));
-                    if (activeNode.Audio is not null && dialogueAudio is not null)
-                    {
-                        dialogueAudio.clip = activeNode.Audio;
-                        dialogueAudio.Play();
-                    }
-                    
-                    Debug.Log($"{activeNode.Actor}: {activeNode.Text}");
+                    ProcessDialogueNode(activeNode);
                     break;
+                
+                case DialogueSelection activeNode:
+                    // Selection determines the upcoming node at runtime; return to skip automatic advancement.
+                    ProcessDialogueSelection(activeNode);
+                    return;
                 
                 default:
                     throw new NotSupportedException($"{currentNode.GetType().Name} is not supported.");
             }
 
-            currentNode = dialogueNodes.GetValueOrDefault(currentNode.UpcomingID);
+            currentNode = dialogueMap.GetValueOrDefault(currentNode.UpcomingID);
         }
         
         /// <summary>
-        /// Stops dialogue execution.
+        /// Processes a <see cref="DialogueNode"/> by triggering its events, its associated audio clip (if available), and displaying the actor's lines.
         /// </summary>
-        public void StopDialogue()
+        /// <param name="activeNode">The <see cref="DialogueNode"/> to process.</param>
+        private void ProcessDialogueNode(DialogueNode activeNode)
         {
-            dialogueAudio.Stop();
-            DisableInput();
-
-            Debug.Log("END DIALOGUE");
+            TriggerEvents(activeNode.Events);
+            if (activeNode.Audio is not null && dialogueAudio is not null)
+            {
+                dialogueAudio.clip = activeNode.Audio;
+                dialogueAudio.Play();
+            }
+                    
+            Debug.Log($"{activeNode.Actor}: {activeNode.Text}");
         }
+        
+        /// <summary>
+        /// Processes a <see cref="DialogueSelection"/> by displaying the available options and switching the input to selection mode.
+        /// </summary>
+        /// <param name="activeNode">The <see cref="DialogueSelection"/> to process.</param>
+        private void ProcessDialogueSelection(DialogueSelection activeNode)
+        {
+            var optionDisplay = "<b>EXPAND FOR DIALOGUE OPTIONS</b>\n";
+            var optionIndex = 0;
 
+            currentOptions = activeNode.DialogueOptions;
+            foreach (var dialogueOption in activeNode.DialogueOptions)
+            {
+                optionDisplay += "\n";
+                optionDisplay += $"<b>Option {optionIndex}</b>: {dialogueOption.OptionData.Text}";
+                optionIndex++;
+            }
+                    
+            Debug.Log(optionDisplay);
+                    
+            DisableContinue();
+            EnableSelect();
+        }
+        
+        /// <summary>
+        /// Triggers all event channels associated with a given <see cref="DialogueEvent"/>, dispatching each as a delayed <see cref="Coroutine"/>.
+        /// </summary>
+        /// <param name="targetEvent">The <see cref="DialogueEvent"/> whose channels will be triggered.</param>
+        private void TriggerEvents(DialogueEvent targetEvent)
+        {
+            targetEvent.EventChannels.ForEach(eventChannel => StartCoroutine(DelayEvent(eventChannel)));
+        }
+        
         /// <summary>
         /// Waits for the specified delay duration in the given <see cref="DelayEvent"/> before emitting the <see cref="DelayEvent.EventChannel"/>.
         /// </summary>
@@ -198,6 +293,17 @@ namespace Code.Scripts.Dialogue.Behaviours
         {
             yield return new WaitForSeconds(delayEvent.DelayDuration);
             delayEvent.EventChannel.Emit();
+        }
+        
+        /// <summary>
+        /// Stops dialogue execution.
+        /// </summary>
+        public void StopDialogue()
+        {
+            dialogueAudio.Stop();
+            DisableContinue();
+
+            Debug.Log("END DIALOGUE");
         }
         
         #if UNITY_EDITOR
@@ -210,7 +316,7 @@ namespace Code.Scripts.Dialogue.Behaviours
         {
             ObjectValidator.AssertConditions(
                 this,
-                (actionReference is null, $"<b>{nameof(actionReference)}</b> is not assigned."),
+                (continueReference is null, $"<b>{nameof(continueReference)}</b> is not assigned."),
                 (dialogueAudio is null, $"<b>{nameof(dialogueAudio)}</b> is not assigned."),
                 (dialogueGraph is null, $"<b>{nameof(dialogueGraph)}</b> is not assigned.")
             );

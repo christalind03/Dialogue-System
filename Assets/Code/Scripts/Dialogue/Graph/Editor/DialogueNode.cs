@@ -1,8 +1,6 @@
 ﻿#if UNITY_EDITOR
 
 using System;
-using System.Collections.Generic;
-using Code.Scripts.Events;
 using Unity.GraphToolkit.Editor;
 using UnityEngine;
 

@@ -59,13 +59,50 @@ namespace Code.Scripts.Dialogue.Graph.Editor
             
             foreach (var graphNode in GetNodes())
             {
-                var inputPort = RetrieveInputPort(graphNode);
-                var outputPort = RetrieveOutputPort(graphNode);
-                
-                RetrievePortConnections(inputPort, inputPortConnections);
-                RetrievePortConnections(outputPort, outputPortConnections);
+                var containsInvalidInput = false;
+                var containsInvalidOutput = false;
 
-                if (1 < inputPortConnections.Count || 1 < outputPortConnections.Count) return true;
+                // Check for invalid input port connections.
+                if (graphNode is not DialogueEntry)
+                {
+                    var inputPort = RetrieveInputPort(graphNode);
+                    RetrievePortConnections(inputPort, inputPortConnections);
+                
+                    containsInvalidInput = inputPortConnections.Count <= 0;
+                }
+
+                // Check for invalid output port connections.
+                switch (graphNode)
+                {
+                    case DialogueExit:
+                        break;
+                    
+                    case DialogueOption:
+                    {
+                        var outputPorts = graphNode.GetOutputPorts();
+                        foreach (var outputPort in outputPorts)
+                        {
+                            RetrievePortConnections(outputPort, outputPortConnections);
+                            if (1 == outputPortConnections.Count) continue;
+                        
+                            containsInvalidOutput = true;
+                            break;
+                        }
+                        
+                        break;
+                    }
+
+                    default:
+                    {
+                        var outputPort = RetrieveOutputPort(graphNode);
+                        RetrievePortConnections(outputPort, outputPortConnections);
+                    
+                        containsInvalidInput = 1 != outputPortConnections.Count;
+                        break;
+                    }
+                }
+                
+                if (containsInvalidInput || containsInvalidOutput) return true;
             }
 
             return false;

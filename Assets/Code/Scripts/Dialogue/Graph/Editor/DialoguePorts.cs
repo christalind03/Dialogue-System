@@ -62,7 +62,7 @@ namespace Code.Scripts.Dialogue.Graph.Editor
         /// <param name="portContext">The context used to define ports for the node.</param>
         public static void CreateInputPort(Node.IPortDefinitionContext portContext)
         {
-            portContext.AddInputPort<INode>(Input).Build();
+            portContext.AddInputPort(Input).Build();
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Code.Scripts.Dialogue.Graph.Editor
         /// <param name="portContext">The context used to define ports for the node.</param>
         public static void CreateOutputPort(Node.IPortDefinitionContext portContext)
         {
-            portContext.AddOutputPort<INode>(Output).Build();
+            portContext.AddOutputPort(Output).Build();
         }
     }
 }

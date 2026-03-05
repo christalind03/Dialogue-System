@@ -1,11 +1,10 @@
 ﻿#if UNITY_EDITOR
 
+using Code.Scripts.Dialogue.Events.Runtime;
+using Code.Scripts.Dialogue.Graph.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Code.Scripts.Dialogue.Events.Runtime;
-using Code.Scripts.Dialogue.Graph.Runtime;
-using Code.Scripts.Events;
 using Unity.GraphToolkit.Editor;
 using UnityEditor.AssetImporters;
 using UnityEngine;
@@ -30,10 +29,10 @@ namespace Code.Scripts.Dialogue.Graph.Editor
             var editorGraph = GraphDatabase.LoadGraphForImporter<DialogueGraph>(importContext.assetPath);
             var runtimeGraph = ScriptableObject.CreateInstance<Runtime.DialogueGraph>();
             
-            var dialogueNodes = IdentifyNodes(editorGraph);
+            var dialogueMap = IdentifyNodes(editorGraph);
             
-            IdentifyStart(editorGraph, runtimeGraph, dialogueNodes);
-            PopulateRuntimeGraph(editorGraph, runtimeGraph, dialogueNodes);
+            IdentifyStart(editorGraph, runtimeGraph, dialogueMap);
+            PopulateRuntimeGraph(dialogueMap, editorGraph, runtimeGraph);
             
             importContext.AddObjectToAsset("Dialogue", runtimeGraph);
             importContext.SetMainObject(runtimeGraph);
@@ -46,16 +45,16 @@ namespace Code.Scripts.Dialogue.Graph.Editor
         /// <returns>A <see cref="Dictionary{TKey,TValue}"/> mapping each <see cref="INode"/> to its assigned runtime integer ID.</returns>
         private static Dictionary<INode, int> IdentifyNodes(DialogueGraph editorGraph)
         {
-            var dialogueNodes = new Dictionary<INode, int>();
+            var dialogueMap = new Dictionary<INode, int>();
             var nodeIndex = 0;
             
             foreach (var dialogueNode in editorGraph.GetNodes())
             {
-                dialogueNodes[dialogueNode] = nodeIndex;
+                dialogueMap[dialogueNode] = nodeIndex;
                 nodeIndex++;
             }
             
-            return dialogueNodes;
+            return dialogueMap;
         }
 
         /// <summary>
@@ -63,8 +62,8 @@ namespace Code.Scripts.Dialogue.Graph.Editor
         /// </summary>
         /// <param name="editorGraph">The source editor <see cref="DialogueGraph"/>.</param>
         /// <param name="runtimeGraph">The runtime <see cref="Runtime.DialogueGraph"/> being constructed.</param>
-        /// <param name="dialogueNodes">A <see cref="Dictionary{TKey,TValue}"/> of editor <see cref="INode"/> to runtime IDs.</param>
-        private static void IdentifyStart(DialogueGraph editorGraph, Runtime.DialogueGraph runtimeGraph, Dictionary<INode, int> dialogueNodes)
+        /// <param name="dialogueMap">A <see cref="Dictionary{TKey,TValue}"/> of editor <see cref="INode"/> to runtime IDs.</param>
+        private static void IdentifyStart(DialogueGraph editorGraph, Runtime.DialogueGraph runtimeGraph, Dictionary<INode, int> dialogueMap)
         {
             var entryNode = editorGraph.GetNodes().OfType<DialogueEntry>().FirstOrDefault();
             if (entryNode is null) return;
@@ -72,7 +71,7 @@ namespace Code.Scripts.Dialogue.Graph.Editor
             var entryPort = entryNode.GetOutputPortByName(DialoguePorts.Output)?.firstConnectedPort;
             if (entryPort is null) return;
 
-            var startingNode = dialogueNodes[entryPort.GetNode()];
+            var startingNode = dialogueMap[entryPort.GetNode()];
             runtimeGraph.SetEntry(startingNode);
         }
         
@@ -81,49 +80,104 @@ namespace Code.Scripts.Dialogue.Graph.Editor
         /// </summary>
         /// <param name="editorGraph">The source editor <see cref="DialogueGraph"/>.</param>
         /// <param name="runtimeGraph">The runtime <see cref="Runtime.DialogueGraph"/> being constructed.</param>
-        /// <param name="dialogueNodes">A <see cref="Dictionary{TKey,TValue}"/> of editor <see cref="INode"/> to runtime IDs.</param>
-        private static void PopulateRuntimeGraph(DialogueGraph editorGraph, Runtime.DialogueGraph runtimeGraph, Dictionary<INode, int> dialogueNodes)
+        /// <param name="dialogueMap">A <see cref="Dictionary{TKey,TValue}"/> of editor <see cref="INode"/> to runtime IDs.</param>
+        private static void PopulateRuntimeGraph(Dictionary<INode, int> dialogueMap, DialogueGraph editorGraph, Runtime.DialogueGraph runtimeGraph)
         {
-            foreach (var dialogueNode in editorGraph.GetNodes())
+            foreach (var editorNode in editorGraph.GetNodes())
             {
-                if (dialogueNode is DialogueEntry or DialogueExit) continue;
-                
-                var nodeID = dialogueNodes[dialogueNode];
-                var outputConnection = dialogueNode.GetOutputPortByName(DialoguePorts.Output).firstConnectedPort;
-                var outputNode = outputConnection.GetNode();
-                var outputID = dialogueNodes[outputNode];
-                
-                var runtimeNode = InstantiateRuntimeNode(dialogueNode, nodeID, outputID);
-                
-                runtimeGraph.RegisterNode(runtimeNode);
+                switch (editorNode)
+                {
+                    case DialogueEntry or DialogueExit:
+                        continue;
+                    
+                    case DialogueNode dialogueNode:
+                        ProcessDialogueNode(dialogueMap, dialogueNode, runtimeGraph);
+                        break;
+
+                    case DialogueOption dialogueOption:
+                        ProcessDialogueOption(dialogueMap, dialogueOption, runtimeGraph);
+                        break;
+                    
+                    default:
+                        throw new NotSupportedException($"{editorNode.GetType().Name} is not supported.");
+                }
             }
+        }
+
+        /// <summary>
+        /// Converts an editor <see cref="DialogueNode"/> into its runtime equivalent.
+        /// </summary>
+        /// <param name="dialogueMap">A <see cref="Dictionary{TKey,TValue}"/> of editor <see cref="INode"/> to runtime IDs.</param>
+        /// <param name="editorNode">The editor <see cref="DialogueNode"/> to convert.</param>
+        /// <param name="runtimeGraph">The runtime <see cref="Runtime.DialogueGraph"/> being constructed.</param>
+        private static void ProcessDialogueNode(Dictionary<INode, int> dialogueMap, DialogueNode editorNode, Runtime.DialogueGraph runtimeGraph)
+        {
+            var nodeID = dialogueMap[editorNode];
+            var outputConnection = editorNode.GetOutputPortByName(DialoguePorts.Output).firstConnectedPort;
+            var outputNode = outputConnection.GetNode();
+            var outputID = dialogueMap[outputNode];
+                    
+            var runtimeNode = InstantiateDialogueNode(editorNode, nodeID, outputID);
+                    
+            runtimeGraph.RegisterNode(runtimeNode);
         }
         
         /// <summary>
-        /// Creates a <see cref="Runtime.RuntimeNode"/> instance from a supported editor node type.
+        /// Converts an editor <see cref="DialogueOption"/> into its runtime equivalent.
         /// </summary>
-        /// <param name="targetNode">The editor <see cref="INode"/> to convert.</param>
+        /// <param name="dialogueMap">A <see cref="Dictionary{TKey,TValue}"/> of editor <see cref="INode"/> to runtime IDs.</param>
+        /// <param name="editorNode">The editor <see cref="DialogueOption"/> to convert.</param>
+        /// <param name="runtimeGraph">The runtime <see cref="Runtime.DialogueGraph"/> being constructed.</param>
+        private static void ProcessDialogueOption(Dictionary<INode, int> dialogueMap, DialogueOption editorNode, Runtime.DialogueGraph runtimeGraph)
+        {
+            var nodeID = dialogueMap[editorNode];
+            var runtimeNode = InstantiateDialogueSelection(dialogueMap, editorNode, nodeID);
+                        
+            runtimeGraph.RegisterNode(runtimeNode);
+        }
+        
+        /// <summary>
+        /// Creates a <see cref="Runtime.DialogueNode"/> instance from a supported editor node type.
+        /// </summary>=
+        /// <param name="editorNode">The editor <see cref="INode"/> to convert.</param>
         /// <param name="nodeID">The assigned runtime ID of this node.</param>
         /// <param name="upcomingID">The assigned runtime ID of the node the output connects to.</param>
-        /// <returns>A constructed <see cref="Runtime.RuntimeNode"/>.</returns>
-        /// <exception cref="NotSupportedException">
-        /// Thrown if the editor <see cref="INode"/> type is not supported for runtime conversion.
-        /// </exception>
-        private static RuntimeNode InstantiateRuntimeNode(INode targetNode, int nodeID, int upcomingID)
+        /// <returns>A constructed <see cref="Runtime.DialogueNode"/>.</returns>
+        private static Runtime.DialogueNode InstantiateDialogueNode(DialogueNode editorNode, int nodeID, int upcomingID)
         {
-            switch (targetNode)
-            {
-                case DialogueNode:
-                    var nodeActor = RetrievePortValue<string>(targetNode.GetInputPortByName(DialoguePorts.Actor));
-                    var nodeAudio = RetrievePortValue<AudioClip>(targetNode.GetInputPortByName(DialoguePorts.Audio));
-                    var nodeText = RetrievePortValue<string>(targetNode.GetInputPortByName(DialoguePorts.Text));
-                    var nodeEvent = RetrievePortValue<DialogueEvent>(targetNode.GetInputPortByName(DialoguePorts.Event));
+            var nodeActor = RetrievePortValue<string>(editorNode.GetInputPortByName(DialoguePorts.Actor));
+            var nodeAudio = RetrievePortValue<AudioClip>(editorNode.GetInputPortByName(DialoguePorts.Audio));
+            var nodeText = RetrievePortValue<string>(editorNode.GetInputPortByName(DialoguePorts.Text));
+            var nodeEvent = RetrievePortValue<DialogueEvent>(editorNode.GetInputPortByName(DialoguePorts.Event));
 
-                    return new Runtime.DialogueNode(nodeID, nodeActor, nodeAudio, nodeText, nodeEvent, upcomingID);
-                
-                default:
-                    throw new NotSupportedException($"{targetNode.GetType().Name} is not supported.");
+            return new Runtime.DialogueNode(nodeID, nodeActor, nodeAudio, nodeText, nodeEvent, upcomingID);
+        }
+        
+        /// <summary>
+        /// Creates a <see cref="Runtime.DialogueSelection"/> instance from a supported editor node type.
+        /// </summary>
+        /// <param name="dialogueNodes">A <see cref="Dictionary{TKey,TValue}"/> of editor <see cref="INode"/> to runtime IDs.</param>
+        /// <param name="editorNode">The editor <see cref="DialogueOption"/> to convert.</param>
+        /// <param name="nodeID">The assigned runtime ID of this node.</param>
+        /// <returns>A constructed <see cref="Runtime.DialogueSelection"/>.</returns>
+        private static Runtime.DialogueSelection InstantiateDialogueSelection(Dictionary<INode, int> dialogueNodes, DialogueOption editorNode, int nodeID)
+        {
+            var dialogueSelection = new DialogueSelection(nodeID);
+            var outputPorts = editorNode.GetOutputPorts().ToList();
+
+            for (var portIndex = 0; portIndex < outputPorts.Count; portIndex++)
+            {
+                // Offset index by one to account for the previous node's connection
+                var optionData = RetrievePortValue<OptionData>(editorNode.GetInputPort(portIndex + 1));
+                        
+                var currentPort = outputPorts[portIndex];
+                var connectedNode = currentPort.firstConnectedPort.GetNode();
+                var upcomingID = dialogueNodes[connectedNode];
+                        
+                dialogueSelection.DialogueOptions.Add(new Runtime.DialogueOption(nodeID, optionData, upcomingID));
             }
+                    
+            return dialogueSelection;
         }
         
         /// <summary>

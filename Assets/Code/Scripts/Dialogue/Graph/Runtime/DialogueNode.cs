@@ -27,7 +27,7 @@ namespace Code.Scripts.Dialogue.Graph.Runtime
         /// </summary>
         [SerializeField]
         private string nodeText;
-
+        
         /// <summary>
         /// The <see cref="DialogueEvent"/> associated with this dialogue line.
         /// </summary>

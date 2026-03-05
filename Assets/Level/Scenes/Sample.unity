@@ -304,7 +304,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6afecbc4e1743f7b5a16ae920f45467, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Code.Scripts.Dialogue::Code.Scripts.Dialogue.Runtime.DialogueManager
-  actionReference: {fileID: 1449406729}
+  continueReference: {fileID: 1246734468}
+  selectReference: {fileID: 607903291}
   dialogueAudio: {fileID: 370246962}
   dialogueGraph: {fileID: 702844159769304480, guid: 724f4ab94109b1d4b923a627392e5df7, type: 3}
 --- !u!82 &370246962
@@ -424,7 +425,7 @@ MonoBehaviour:
       - m_Target: {fileID: 370246961}
         m_TargetAssemblyTypeName: Code.Scripts.Dialogue.Runtime.DialogueManager,
           Code.Scripts.Dialogue
-        m_MethodName: DisableInput
+        m_MethodName: DisableContinue
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -454,7 +455,7 @@ MonoBehaviour:
       - m_Target: {fileID: 370246961}
         m_TargetAssemblyTypeName: Code.Scripts.Dialogue.Runtime.DialogueManager,
           Code.Scripts.Dialogue
-        m_MethodName: EnableInput
+        m_MethodName: EnableContinue
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -493,6 +494,20 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &607903291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc1515ab76e54f068e2f2207940fab32, type: 3}
+  m_Name: Dialogue/Select Dialogue
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
+  m_Asset: {fileID: -944628639613478452, guid: 23fc990bde09699408a47f65394a4f55, type: 3}
+  m_ActionId: bd924112-b889-429b-9b1e-60cbf9beefe2
 --- !u!1 &1023443829
 GameObject:
   m_ObjectHideFlags: 0
@@ -620,7 +635,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!114 &1449406729
+--- !u!114 &1246734468
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -630,7 +645,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fc1515ab76e54f068e2f2207940fab32, type: 3}
-  m_Name: Dialogue/Continue
+  m_Name: Dialogue/Continue Dialogue
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
   m_Asset: {fileID: -944628639613478452, guid: 23fc990bde09699408a47f65394a4f55, type: 3}
   m_ActionId: f105f536-22b4-4639-a3c4-344c929aa66c
