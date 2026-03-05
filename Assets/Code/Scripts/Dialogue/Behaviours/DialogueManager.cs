@@ -220,6 +220,10 @@ namespace Code.Scripts.Dialogue.Behaviours
             
             switch (currentNode)
             {
+                case DialogueExit activeNode:
+                    ProcessDialogueExit(activeNode);
+                    break;
+                
                 case DialogueNode activeNode:
                     ProcessDialogueNode(activeNode);
                     break;
@@ -234,6 +238,16 @@ namespace Code.Scripts.Dialogue.Behaviours
             }
 
             currentNode = dialogueMap.GetValueOrDefault(currentNode.UpcomingID);
+        }
+        
+        /// <summary>
+        /// Processes a <see cref="DialogueExit"/> by triggering its events and terminating the dialogue flow.
+        /// </summary>
+        /// <param name="activeNode">The <see cref="DialogueNode"/> to process.</param>
+        private void ProcessDialogueExit(DialogueExit activeNode)
+        {
+            TriggerEvents(activeNode.Events);
+            StopDialogue();
         }
         
         /// <summary>

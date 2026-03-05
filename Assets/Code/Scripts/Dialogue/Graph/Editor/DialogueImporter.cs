@@ -87,8 +87,12 @@ namespace Code.Scripts.Dialogue.Graph.Editor
             {
                 switch (editorNode)
                 {
-                    case DialogueEntry or DialogueExit:
+                    case DialogueEntry:
                         continue;
+                    
+                    case DialogueExit dialogueExit:
+                        ProcessDialogueExit(dialogueMap, dialogueExit, runtimeGraph);
+                        break;
                     
                     case DialogueNode dialogueNode:
                         ProcessDialogueNode(dialogueMap, dialogueNode, runtimeGraph);
@@ -104,6 +108,21 @@ namespace Code.Scripts.Dialogue.Graph.Editor
             }
         }
 
+        /// <summary>
+        /// Converts an editor <see cref="DialogueExit"/> into its runtime equivalent.
+        /// </summary>
+        /// <param name="dialogueMap">A <see cref="Dictionary{TKey,TValue}"/> of editor <see cref="INode"/> to runtime IDs.</param>
+        /// <param name="editorNode">The editor <see cref="DialogueExit"/> to convert.</param>
+        /// <param name="runtimeGraph">The runtime <see cref="Runtime.DialogueGraph"/> being constructed.</param>
+        private static void ProcessDialogueExit(Dictionary<INode, int> dialogueMap, DialogueExit editorNode, Runtime.DialogueGraph runtimeGraph)
+        {
+            var nodeID = dialogueMap[editorNode];
+            
+            var runtimeNode = InstantiateDialogueExit(editorNode, nodeID);
+            
+            runtimeGraph.RegisterNode(runtimeNode);
+        }
+        
         /// <summary>
         /// Converts an editor <see cref="DialogueNode"/> into its runtime equivalent.
         /// </summary>
@@ -134,6 +153,18 @@ namespace Code.Scripts.Dialogue.Graph.Editor
             var runtimeNode = InstantiateDialogueSelection(dialogueMap, editorNode, nodeID);
                         
             runtimeGraph.RegisterNode(runtimeNode);
+        }
+        
+        /// <summary>
+        /// Creates a <see cref="Runtime.DialogueExit"/> instance from a supported editor node type.
+        /// </summary>
+        /// <param name="editorNode">The editor <see cref="INode"/> to convert.</param>
+        /// <param name="nodeID">The assigned runtime ID of this node.</param>
+        /// <returns>A constructed <see cref="Runtime.DialogueExit"/>.</returns>
+        private static Runtime.DialogueExit InstantiateDialogueExit(DialogueExit editorNode, int nodeID)
+        {
+            var nodeEvent = RetrievePortValue<DialogueEvent>(editorNode.GetInputPortByName(DialoguePorts.Event));
+            return new Runtime.DialogueExit(nodeID, nodeEvent);
         }
         
         /// <summary>
