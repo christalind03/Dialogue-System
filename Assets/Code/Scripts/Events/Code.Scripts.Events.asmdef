@@ -1,3 +1,16 @@
 {
-	"name": "Code.Scripts.Events"
+    "name": "Code.Scripts.Events",
+    "rootNamespace": "",
+    "references": [
+        "GUID:c6949c650e913cb4283a501ddb7979cd"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

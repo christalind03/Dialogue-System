@@ -1,7 +1,7 @@
-﻿using Code.Scripts.Dialogue.Events.Runtime;
+﻿using Code.Scripts.Attributes.Required;
+using Code.Scripts.Dialogue.Events.Runtime;
 using Code.Scripts.Dialogue.Graph.Runtime;
 using Code.Scripts.Events.Runtime;
-using Code.Scripts.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,16 +19,19 @@ namespace Code.Scripts.Dialogue.Behaviours
     {
         [Header("Input Actions")]
         
+        [Required]
         [SerializeField]
         [Tooltip("The reference for the input action used to continue dialogue.")]
         private InputActionReference continueReference;
         
+        [Required]
         [SerializeField]
         [Tooltip("The reference for the input action used to select a dialogue option.")]
         private InputActionReference selectReference;
         
         [Header("Runtime References")]
         
+        [Required]
         [SerializeField]
         [Tooltip("The AudioSource used to play dialogue voice lines during playback.")]
         private AudioSource dialogueAudio;
@@ -67,8 +70,6 @@ namespace Code.Scripts.Dialogue.Behaviours
         /// </summary>
         private void Awake()
         {
-            dialogueAudio = GetComponent<AudioSource>();
-            
             continueAction = continueReference.action;
             selectAction = selectReference.action;
         }
@@ -320,23 +321,5 @@ namespace Code.Scripts.Dialogue.Behaviours
 
             Debug.Log("END DIALOGUE");
         }
-        
-        #if UNITY_EDITOR
-        
-        /// <summary>
-        /// Validates required references in the Unity Editor.
-        /// If validation fails while in Play mode, the editor will immediately exit Play mode to prevent further issues.
-        /// </summary>
-        private void OnValidate()
-        {
-            ObjectValidator.AssertConditions(
-                this,
-                (continueReference is null, $"<b>{nameof(continueReference)}</b> is not assigned."),
-                (dialogueAudio is null, $"<b>{nameof(dialogueAudio)}</b> is not assigned."),
-                (dialogueGraph is null, $"<b>{nameof(dialogueGraph)}</b> is not assigned.")
-            );
-        }
-        
-        #endif
     }
 }

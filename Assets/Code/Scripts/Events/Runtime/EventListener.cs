@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Code.Scripts.Attributes.Required;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -13,6 +14,7 @@ namespace Code.Scripts.Events.Runtime
         [Tooltip("The time (in seconds) to wait after the event before responding.")]
         private float delayDuration;
         
+        [Required]
         [SerializeField]
         [Tooltip("The EventChannel asset to listen to.")]
         private EventChannel eventChannel;
