@@ -11,6 +11,12 @@ namespace Code.Scripts.Dialogue.Graph.Editor
     /// </summary>
     internal static class DialoguePorts
     {
+        internal enum Port
+        {
+            Input,
+            Output,
+        }
+        
         /// <summary>
         /// Defines the actor for a dialogue node.
         /// <para>Expected Type: <see cref="string"/></para>
@@ -72,6 +78,45 @@ namespace Code.Scripts.Dialogue.Graph.Editor
         public static void CreateOutputPort(Node.IPortDefinitionContext portContext)
         {
             portContext.AddOutputPort(Output).Build();
+        }
+        
+        /// <summary>
+        /// Retrieves the value from a specific port.
+        /// </summary>
+        /// <param name="activeNode">The <see cref="INode"/> to retrieve the port value from.</param>
+        /// <param name="portDirection">The <see cref="Port"/> indicating whether to retrieve an input or output port.</param>
+        /// <param name="portLabel">The label of the port to retrieve the value from.</param>
+        /// <typeparam name="T">The expected value type.</typeparam>
+        /// <returns>The resolved value, or default(T) if none exists.</returns>
+        public static T RetrievePortValue<T>(INode activeNode, Port portDirection, string portLabel)
+        {
+            var activePort = portDirection == Port.Input
+                ? activeNode.GetInputPortByName(portLabel)
+                : activeNode.GetOutputPortByName(portLabel);
+            
+            return RetrievePortValue<T>(activePort);
+        }
+        
+        /// <summary>
+        /// Retrieves the value from a specific port.
+        /// </summary>
+        /// <param name="activePort">The input <see cref="IPort"/> to retrieve the value from.</param>
+        /// <typeparam name="T">The expected value type.</typeparam>
+        /// <returns>The resolved value, or default(T) if none exists.</returns>
+        public static T RetrievePortValue<T>(IPort activePort)
+        {
+            if (activePort is null) return default;
+            if (activePort.isConnected)
+            {
+                if (activePort.firstConnectedPort.GetNode() is IVariableNode currentNode)
+                {
+                    currentNode.variable.TryGetDefaultValue(out T currentValue);
+                    return currentValue;
+                }
+            }
+
+            activePort.TryGetValue(out T defaultValue);
+            return defaultValue;
         }
     }
 }

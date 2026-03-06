@@ -78,8 +78,12 @@ namespace Code.Scripts.Dialogue.Behaviours
         /// </summary>
         private void Start()
         {
+            if (dialogueGraph is null) return;
+            
             LoadDialogue();
-            PlayDialogue();
+            ContinueDialogue();
+            
+            ToggleContinue(true);
         }
 
         /// <summary>
@@ -87,7 +91,7 @@ namespace Code.Scripts.Dialogue.Behaviours
         /// </summary>
         private void OnEnable()
         {
-            continueAction.performed += PlayDialogue;
+            continueAction.performed += ContinueDialogue;
             selectAction.performed += SelectDialogue;
         }
 
@@ -96,40 +100,40 @@ namespace Code.Scripts.Dialogue.Behaviours
         /// </summary>
         private void OnDisable()
         {
-            continueAction.performed -= PlayDialogue;
+            continueAction.performed -= ContinueDialogue;
             selectAction.performed -= SelectDialogue;
         }
 
         /// <summary>
-        /// Allow the <see cref="DialogueManager"/> to receive input events for <see cref="continueAction"/>.
+        /// Toggles the <see cref="continueAction"/> to be enabled or disabled.
         /// </summary>
-        public void EnableContinue()
+        /// <param name="isEnabled">If <c>true</c>, enables <see cref="continueAction"/>; otherwise, disables it.</param>
+        public void ToggleContinue(bool isEnabled)
         {
-            continueAction.Enable();
+            if (isEnabled)
+            {
+                continueAction.Enable();
+            }
+            else
+            {
+                continueAction.Disable();
+            }
         }
 
         /// <summary>
-        /// Allow the <see cref="DialogueManager"/> to receive input events for <see cref="selectAction"/>.
+        /// Toggles the <see cref="selectAction"/> to be enabled or disabled.
         /// </summary>
-        public void EnableSelect()
+        /// <param name="isEnabled">If <c>true</c>, enables <see cref="selectAction"/>; otherwise, disables it.</param>
+        public void ToggleSelect(bool isEnabled)
         {
-            selectAction.Enable();
-        }
-
-        /// <summary>
-        /// Prevent the <see cref="DialogueManager"/> from receiving input events for <see cref="continueAction"/>.
-        /// </summary>
-        public void DisableContinue()
-        {
-            continueAction.Disable();
-        }
-
-        /// <summary>
-        /// Prevent the <see cref="DialogueManager"/> from receiving input events for <see cref="selectAction"/>.
-        /// </summary>
-        public void DisableSelect()
-        {
-            selectAction.Disable();
+            if (isEnabled)
+            {
+                selectAction.Enable();
+            }
+            else
+            {
+                selectAction.Disable();
+            }
         }
         
         /// <summary>
@@ -158,12 +162,12 @@ namespace Code.Scripts.Dialogue.Behaviours
         }
 
         /// <summary>
-        /// Callback wrapper for <see cref="PlayDialogue()"/> when <see cref="continueAction"/> is performed.
+        /// Callback wrapper for <see cref="ContinueDialogue"/> when <see cref="continueAction"/> is performed.
         /// </summary>
         /// <param name="inputContext">The context information about the <see cref="continueAction"/> trigger.</param>
-        private void PlayDialogue(InputAction.CallbackContext inputContext)
+        private void ContinueDialogue(InputAction.CallbackContext inputContext)
         {                
-            PlayDialogue();
+            ContinueDialogue();
         }
         
         /// <summary>
@@ -181,16 +185,18 @@ namespace Code.Scripts.Dialogue.Behaviours
             
             var selectedOption = currentOptions[keySelection];
             
-            DisableSelect();
             TriggerEvents(selectedOption.OptionData.Events);
             currentNode = dialogueMap[selectedOption.UpcomingID];
-            PlayDialogue();
+            ContinueDialogue();
+            
+            ToggleContinue(true);
+            ToggleSelect(false);
         }
         
         /// <summary>
-        /// Begins or continues dialogue execution.
+        /// Continues dialogue execution.
         /// </summary>
-        public void PlayDialogue()
+        public void ContinueDialogue()
         {
             if (-1 < currentNode?.NodeID)
             {
@@ -199,11 +205,6 @@ namespace Code.Scripts.Dialogue.Behaviours
             else
             {
                 StopDialogue();
-            }
-            
-            if (continueAction.enabled == false)
-            {
-                EnableContinue();
             }
         }
 
@@ -285,8 +286,8 @@ namespace Code.Scripts.Dialogue.Behaviours
                     
             Debug.Log(optionDisplay);
                     
-            DisableContinue();
-            EnableSelect();
+            ToggleContinue(false);
+            ToggleSelect(true);
         }
         
         /// <summary>
@@ -315,7 +316,7 @@ namespace Code.Scripts.Dialogue.Behaviours
         public void StopDialogue()
         {
             dialogueAudio.Stop();
-            DisableContinue();
+            ToggleContinue(false);
 
             Debug.Log("END DIALOGUE");
         }

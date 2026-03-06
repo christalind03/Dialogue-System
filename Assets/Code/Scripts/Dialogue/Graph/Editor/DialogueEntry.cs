@@ -3,6 +3,8 @@
 using System;
 using Unity.GraphToolkit.Editor;
 
+using static Code.Scripts.Dialogue.Graph.Editor.DialoguePorts;
+
 namespace Code.Scripts.Dialogue.Graph.Editor
 {
     /// <summary>
@@ -17,7 +19,7 @@ namespace Code.Scripts.Dialogue.Graph.Editor
         /// <param name="portContext">The context used to define ports for this node.</param>
         protected override void OnDefinePorts(IPortDefinitionContext portContext)
         {
-            DialoguePorts.CreateOutputPort(portContext);
+            CreateOutputPort(portContext);
         }
     }
 }
